@@ -119,19 +119,22 @@ class Install:
         except Exception as e:
             print("[cmd error]: {}".format(e))
             raise e
+        return None
 
     def start(self):
         self._install_gcc()
         self._install_cmake()
         self._install_setup()
         self._install_tinyxml2()
-        # # self._clone_dds()
+        # self._clone_dds()
         self._install_dds2()
         self._install_nlohmann_json()
         self._install_proj()  # ros_bridge of apollo v10
         self._install_gfamily()
         self._install_gperftools()  # apollo v10
         self._unpack_bvar()  # apollo v10
+        print("environment setup finished")
+        return None
 
     def _clone_repo(self, repo_name: str, *args):
         dowload_path = os.path.join(self._dowload_path, repo_name)
@@ -148,6 +151,7 @@ class Install:
             print("clone failed: {}".format(repo_url))
             raise Exception("clone failed: {}".format(repo_url))
         print("clone success: {}".format(repo_url))
+        return None
 
     def _install_setup(self):
         self._clone_repo("setup", "--depth=1")
@@ -157,6 +161,7 @@ class Install:
         self._cmd("cmake -DCMAKE_INSTALL_PREFIX={} ..".format(self._install_prefix))
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
+        return None
 
     def _install_gcc(self):
         print("start to install gcc")
@@ -193,8 +198,7 @@ class Install:
             "sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100"
         )
         self._cmd("sudo ldconfig")
-        self._cmd("gcc --version")
-        self._cmd("g++ --version")
+        print(f"GCC version: {self._get_gcc_version()}")
         return None
 
     def _install_cmake(self):
@@ -258,6 +262,7 @@ class Install:
         )
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
+        return None
 
     def _install_tinyxml2(self):
         self._clone_repo(
@@ -277,6 +282,7 @@ class Install:
         )
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
+        return None
 
     def _install_gperftools(self):
         self._clone_repo(
@@ -301,14 +307,43 @@ class Install:
         tcmalloc_minimal_path = os.path.join(
             self._install_prefix, "lib/libtcmalloc_minimal.so"
         )
-        if os.path.exists(setup_path) and os.path.exists(tcmalloc_minimal_path):
-            with open(setup_path, "a", encoding="utf-8") as f:
-                f.write("export LD_PRELOAD={}".format(tcmalloc_minimal_path) + "\n")
-
-        setup_path = os.path.join(self._install_prefix, "setup.bash")
-        if os.path.exists(setup_path) and os.path.exists(tcmalloc_minimal_path):
-            with open(setup_path, "a", encoding="utf-8") as f:
-                f.write("export LD_PRELOAD={}".format(tcmalloc_minimal_path) + "\n")
+        if os.path.exists(tcmalloc_minimal_path):
+            setup_path = os.path.join(self._install_prefix, "setup.zsh")
+            if os.path.exists(setup_path):
+                var_exists = False
+                try:
+                    with open(setup_path, "r", encoding="utf-8") as f:
+                        lines = f.read().splitlines()
+                        if tcmalloc_minimal_path in lines:
+                            var_exists = True
+                    if not var_exists:
+                        with open(setup_path, "a", encoding="utf-8") as f:
+                            f.write(
+                                "export LD_PRELOAD={}:$LD_PRELOAD".format(
+                                    tcmalloc_minimal_path
+                                )
+                                + "\n"
+                            )
+                except Exception as _:
+                    pass
+            setup_path = os.path.join(self._install_prefix, "setup.bash")
+            if os.path.exists(setup_path):
+                var_exists = False
+                try:
+                    with open(setup_path, "r", encoding="utf-8") as f:
+                        lines = f.read().splitlines()
+                        if tcmalloc_minimal_path in lines:
+                            var_exists = True
+                    if not var_exists:
+                        with open(setup_path, "a", encoding="utf-8") as f:
+                            f.write(
+                                "export LD_PRELOAD={}:$LD_PRELOAD".format(
+                                    tcmalloc_minimal_path
+                                )
+                                + "\n"
+                            )
+                except Exception as _:
+                    pass
         return None
 
     def _install_proj(self):
@@ -334,7 +369,6 @@ class Install:
         )
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
-
         return None
 
     def _install_gfamily(self):
@@ -411,6 +445,7 @@ class Install:
         )
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
+        return None
 
     def _clone_dds(self):
         # self._clone_github_repo(
@@ -450,6 +485,7 @@ class Install:
         self._cmd("cp -r fast-rtps-1.5.0-1/* {}".format(self._install_prefix))
         self._cmd("rm -rf fast-rtps-1.5.0-1/")
         os.chdir(self._current_path)
+        return None
 
     def _install_dds2(self):
         self._clone_repo(
@@ -521,20 +557,20 @@ class Install:
         )
         self._cmd("make install -j$(($(nproc) - 1))")
         os.chdir(self._current_path)
-
         return None
 
     def _unpack_bvar(self):
-        download_url = (
-            "https://raw.githubusercontent.com/wiki/minhanghuang/CyberRT/libs"
-        )
+        print("start unpack bvar")
+        download_url = ""
         if "gitee" == self._proxy:
             download_url = "https://gitee.com/minhanghuang/CyberRT-Libs/raw/master/libs"
         else:
-            pass
-        bvar_name = "bvar_9.0.0-rc-r2_amd64.deb"
+            download_url = (
+                "https://raw.githubusercontent.com/wiki/minhanghuang/CyberRT/libs"
+            )
+        bvar_name = ""
         if "x86_64" == self._machine:
-            pass
+            bvar_name = "bvar_9.0.0-rc-r2_amd64.deb"
         else:
             bvar_name = "bvar_9.0.0-rc-r3_arm64.deb"
         download_url = download_url + "/" + bvar_name
@@ -556,6 +592,32 @@ class Install:
             )
         )
         return None
+
+    def _get_cmake_version(self) -> str:
+        result = subprocess.run(
+            ["cmake", "--version"],
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+            check=True,
+        )
+        output = result.stdout.splitlines()[0]
+        match = re.search(r"(\d+\.\d+\.\d+)", output)
+        if match:
+            return match.group(1)
+        return "0.0.0"
+
+    def _get_gcc_version(self) -> str:
+        result = subprocess.run(
+            ["gcc", "--version"],
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+            check=True,
+        )
+        output = result.stdout.splitlines()[0]
+        match = re.search(r"(\d+\.\d+\.\d+)", output)
+        if match:
+            return match.group(1)
+        return "0.0"
 
 
 def parse_config():

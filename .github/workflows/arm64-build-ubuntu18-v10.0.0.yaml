@@ -6,6 +6,10 @@ on:
     branches:
       - v10.0.0
 
+  pull_request:
+    branches:
+      - v10.0.0
+
 jobs:
   build-arm64-ubuntu18:
     runs-on: ubuntu-24.04-arm
@@ -18,20 +22,28 @@ jobs:
         uses: actions/checkout@v1 # https://github.com/actions/checkout/issues/1590
         with:
           fetch-depth: 1
-      
-      - name: Install
+
+      - name: Environment
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           apt update
-          apt install -y sudo lsb-release git wget libcurl4-openssl-dev pkg-config g++ cmake uuid-dev libncurses5-dev python3-dev autoconf automake libtool libeigen3-dev libtiff-dev libsqlite3-dev sqlite3
+          apt install -y lsb-release
+          echo "-----------------------"
+          uname -a
+          lsb_release -a
+          echo "-----------------------"
+
+      - name: Install
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt install -y sudo git wget libcurl4-openssl-dev pkg-config g++ cmake uuid-dev libncurses5-dev python3-dev autoconf automake libtool libeigen3-dev libtiff-dev libsqlite3-dev sqlite3
+          python3 install.py
 
       - name: Build
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-            echo "-----------------------"
-            uname -a
-            lsb_release -a
-            echo "-----------------------"
-            bash -c "python3 install.py && source install/setup.bash && mkdir -p build && cd build && cmake .. && make -j$(nproc)"
+          # why unset LD_PRELOAD? -> https://github.com/minhanghuang/CyberRT/actions/runs/16334436289/job/46143650461#step:6:7
+          bash -c "source install/setup.bash && unset LD_PRELOAD && mkdir -p build && cd build && cmake .. && make -j$(nproc)"
