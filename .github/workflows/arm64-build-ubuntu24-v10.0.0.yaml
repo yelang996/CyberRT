@@ -9,6 +9,10 @@ on:
 jobs:
   build-arm64-ubuntu24:
     runs-on: ubuntu-24.04-arm
+    container:
+      # dockerhub images
+      image: docker://ubuntu:24.04
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v1 # https://github.com/actions/checkout/issues/1590
