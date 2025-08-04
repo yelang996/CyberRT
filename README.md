@@ -38,23 +38,22 @@ python3 -m pip install protobuf==3.14.0
 
 | dependence   |  v9.0.0           |  v10.0.0  |
 | :---: |  :---: |:---:|
-| C++ STANDARD |   C++14           |   C+17    |
-| gcc/g++      |   system default  |   8.1+    |
-| FastDDS      |   v1.5.0           |   v2.14.3 |
-| protobuf      |   v3.14.0           |   v3.14.0 |
-| bvar            |   -                  |   UNKNOWN               |
-| gperftools      |   -           |   gperftools-2.8  |
-| PROJ            |   -                  |   7.1.0           |
+| C++ STANDARD |   `C++14`           |   `C++17`    |
+| gcc/g++      |   `system default`  |   `8.1+`    |
+| FastDDS      |   `v1.5.0`           |   `v2.14.3` |
+| Protobuf      |   `v3.14.0`          |   `v3.14.0` |
+| bvar            |   -                  |   `UNKNOWN`               |
+| gperftools      |   -           |   `gperftools-2.8`  |
+| PROJ            |   -                  |   `7.1.0`           |
 
 ## Build Instructions
 
 1. Clone the Repository
 ```shell
 git clone --single-branch --branch v10.0.0 https://github.com/minhanghuang/CyberRT.git
-cd CyberRT
 ```
 
-2. Install Third-Party Dependencies
+2. Install third-party Dependencies
 
 Run the following command to install required third-party libraries:
 ```shell
@@ -111,7 +110,7 @@ cyber_launch start share/examples/common_component_example/common.launch
 ./cyber/examples/common_component_example/channel_test_writer
 ```
 
-3. Log Directory (Optional)
+3. Log Directory(optional)
 
 **The Cyber log storage path is similar to `ROS` and is saved in `~/.cyber/log`**
 
